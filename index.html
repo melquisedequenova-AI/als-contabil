@@ -1328,7 +1328,6 @@ footer {
   .hero-stats-bar { flex-direction: column; }
 }
 </style>
-<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </head>
 <body>
 
@@ -1902,18 +1901,18 @@ footer {
   <div class="fgrid">
     <div class="fgroup">
       <label class="flabel">Nome Completo *</label>
-      <input type="text" name="nome" class="finput" placeholder="Seu nome" required data-fs-field>
+      <input type="text" name="nome" class="finput" placeholder="Seu nome" required>
       <span data-fs-error="nome" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
     </div>
     <div class="fgroup">
       <label class="flabel">WhatsApp *</label>
-      <input type="tel" name="whatsapp" class="finput" placeholder="(11) 99999-9999" required data-fs-field>
+      <input type="tel" name="whatsapp" class="finput" placeholder="(11) 99999-9999" required>
       <span data-fs-error="whatsapp" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
     </div>
   </div>
   <div class="fgroup">
     <label class="flabel">E-mail</label>
-    <input type="email" name="email" class="finput" placeholder="seu@email.com" data-fs-field>
+    <input type="email" name="email" class="finput" placeholder="seu@email.com">
     <span data-fs-error="email" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
   </div>
   <div class="fgroup">
@@ -1930,13 +1929,13 @@ footer {
   </div>
   <div class="fgroup">
     <label class="flabel">Qual serviço você precisa?</label>
-    <textarea name="mensagem" class="ftextarea" placeholder="Descreva brevemente sua necessidade..." data-fs-field></textarea>
+    <textarea name="mensagem" class="ftextarea" placeholder="Descreva brevemente sua necessidade..."></textarea>
     <span data-fs-error="mensagem" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
   </div>
   <input type="hidden" name="_subject" value="[ALS Site] Nova consulta de contato">
   <input type="hidden" name="_template" value="table">
   <input type="hidden" name="_language" value="pt">
-  <button type="submit" class="fsubmit" data-fs-submit-btn>
+  <button type="submit" class="fsubmit">
     Solicitar Consulta Gratuita →
   </button>
 </form>
@@ -2100,47 +2099,104 @@ setTimeout(() => {
   document.querySelectorAll('.hero-stat-num[data-target]').forEach(animateCounter);
 }, 1200);
 
-// ── FORMSPREE INIT + WHATSAPP ON SUCCESS ──
+// ── FORM SUBMIT — Formspree fetch + WhatsApp ──
 document.addEventListener('DOMContentLoaded', function () {
-  // Inicializa Formspree Ajax SDK
-  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-  formspree('initForm', {
-    formElement: '#als-contact-form',
-    formId: 'mrevpvvg'
-  });
-
-  // Quando Formspree confirmar sucesso, abre WhatsApp com os dados
+  var form    = document.getElementById('als-contact-form');
   var successEl = document.querySelector('[data-fs-success]');
-  if (successEl) {
-    var alreadyOpened = false;
-    var obs = new MutationObserver(function () {
-      var visible = successEl.style.display !== 'none' && successEl.style.display !== '';
-      if (!visible || alreadyOpened) return;
-      alreadyOpened = true;
+  var errorEl   = document.querySelector('[data-fs-error]:not([data-fs-error="nome"]):not([data-fs-error="whatsapp"]):not([data-fs-error="email"]):not([data-fs-error="mensagem"])');
+  var submitBtn = form ? form.querySelector('[type="submit"]') : null;
 
-      var f = document.getElementById('als-contact-form');
-      var nome    = (f.querySelector('[name=nome]')         || {}).value || '';
-      var fone    = (f.querySelector('[name=whatsapp]')     || {}).value || '';
-      var email   = (f.querySelector('[name=email]')        || {}).value || '';
-      var empresa = (f.querySelector('[name=tipo_empresa]') || {}).value || '';
-      var servico = (f.querySelector('[name=mensagem]')     || {}).value || '';
+  if (!form) return;
 
-      var msg = '*Solicitação de Consulta — ALS Assessoria*\n\n';
-      if (nome)    msg += '*Nome:* '            + nome.trim()    + '\n';
-      if (fone)    msg += '*WhatsApp:* '        + fone.trim()    + '\n';
-      if (email)   msg += '*E-mail:* '          + email.trim()   + '\n';
-      if (empresa) msg += '*Tipo de empresa:* ' + empresa.trim() + '\n';
-      if (servico) msg += '\n*Necessidade:*\n' + servico.trim() + '\n';
-      msg += '\n_Enviado pelo site ALS Assessoria_';
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
 
-      var waUrl = 'https://wa.me/5511950191452?text=' + encodeURIComponent(msg);
-      setTimeout(function () {
-        window.open(waUrl, '_blank');
-        alreadyOpened = false; // reset para próximo envio
-      }, 1000);
+    var nome    = (form.querySelector('[name="nome"]')         || {}).value || '';
+    var fone    = (form.querySelector('[name="whatsapp"]')     || {}).value || '';
+    var email   = (form.querySelector('[name="email"]')        || {}).value || '';
+    var empresa = (form.querySelector('[name="tipo_empresa"]') || {}).value || '';
+    var servico = (form.querySelector('[name="mensagem"]')     || {}).value || '';
+
+    // Validação mínima
+    if (!nome.trim() || !fone.trim()) {
+      alert('Por favor, preencha nome e WhatsApp.');
+      return;
+    }
+
+    // Feedback visual
+    submitBtn.textContent = 'Enviando...';
+    submitBtn.disabled    = true;
+    if (successEl) successEl.style.display = 'none';
+    if (errorEl)   errorEl.style.display   = 'none';
+
+    // Monta payload para Formspree
+    var fd = new FormData();
+    fd.append('nome',         nome);
+    fd.append('whatsapp',     fone);
+    fd.append('email',        email);
+    fd.append('tipo_empresa', empresa);
+    fd.append('mensagem',     servico);
+    fd.append('_subject',     '[ALS Site] Nova consulta — ' + nome.trim());
+    fd.append('_template',    'table');
+    fd.append('_language',    'pt');
+
+    fetch('https://formspree.io/f/mrevpvvg', {
+      method:  'POST',
+      body:    fd,
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.ok || data.next) {
+        // SUCESSO — mostra mensagem verde
+        if (successEl) successEl.style.display = 'block';
+
+        submitBtn.textContent = 'Enviado com sucesso!';
+        submitBtn.style.background = '#25D366';
+        submitBtn.style.color      = '#0e1520';
+
+        // Abre WhatsApp com os dados 1s depois
+        var msg  = '*Solicitacao de Consulta - ALS Assessoria*\n\n';
+        if (nome)    msg += '*Nome:* '            + nome.trim()    + '\n';
+        if (fone)    msg += '*WhatsApp:* '        + fone.trim()    + '\n';
+        if (email)   msg += '*E-mail:* '          + email.trim()   + '\n';
+        if (empresa) msg += '*Empresa:* '         + empresa.trim() + '\n';
+        if (servico) msg += '\n*Necessidade:*\n' + servico.trim() + '\n';
+        msg += '\n_Enviado pelo site ALS Assessoria_';
+
+        setTimeout(function () {
+          window.open('https://wa.me/5511950191452?text=' + encodeURIComponent(msg), '_blank');
+        }, 1000);
+
+        // Reset após 5s
+        setTimeout(function () {
+          form.reset();
+          submitBtn.textContent      = 'Solicitar Consulta Gratuita →';
+          submitBtn.style.background = '';
+          submitBtn.style.color      = '';
+          submitBtn.disabled         = false;
+          if (successEl) successEl.style.display = 'none';
+        }, 6000);
+
+      } else {
+        // ERRO do Formspree
+        if (errorEl) errorEl.style.display = 'block';
+        submitBtn.textContent = 'Solicitar Consulta Gratuita →';
+        submitBtn.disabled    = false;
+      }
+    })
+    .catch(function () {
+      // ERRO de rede — abre WhatsApp direto como fallback
+      if (errorEl) errorEl.style.display = 'block';
+      submitBtn.textContent = 'Solicitar Consulta Gratuita →';
+      submitBtn.disabled    = false;
+
+      var msg  = '*Solicitacao de Consulta - ALS Assessoria*\n\n';
+      if (nome)    msg += '*Nome:* '     + nome.trim() + '\n';
+      if (fone)    msg += '*WhatsApp:* ' + fone.trim() + '\n';
+      window.open('https://wa.me/5511950191452?text=' + encodeURIComponent(msg), '_blank');
     });
-    obs.observe(successEl, { attributes: true, attributeFilter: ['style'] });
-  }
+  });
 });
 
 // ── SMOOTH SCROLL ──
