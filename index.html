@@ -1328,6 +1328,7 @@ footer {
   .hero-stats-bar { flex-direction: column; }
 }
 </style>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </head>
 <body>
 
@@ -1895,41 +1896,50 @@ footer {
       <h3 class="form-title">Solicitar Consulta</h3>
       <p class="form-sub">Gratuita · Sem compromisso · Resposta em até 24h</p>
 
-      <form onsubmit="submitForm(event)">
-        <div class="fgrid">
-          <div class="fgroup">
-            <label class="flabel">Nome Completo</label>
-            <input type="text" class="finput" placeholder="Seu nome" required>
-          </div>
-          <div class="fgroup">
-            <label class="flabel">WhatsApp</label>
-            <input type="tel" class="finput" placeholder="(11) 99999-9999" required>
-          </div>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">E-mail</label>
-          <input type="email" class="finput" placeholder="seu@email.com">
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Tipo de Empresa</label>
-          <select class="fselect finput">
-            <option value="">Selecione...</option>
-            <option>MEI</option>
-            <option>Microempresa (ME)</option>
-            <option>Empresa de Pequeno Porte (EPP)</option>
-            <option>Empresa de Médio/Grande Porte</option>
-            <option>Pessoa Física</option>
-            <option>Ainda não tenho empresa</option>
-          </select>
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Qual serviço você precisa?</label>
-          <textarea class="ftextarea" placeholder="Descreva brevemente sua necessidade..."></textarea>
-        </div>
-        <button type="submit" class="fsubmit">
-          Solicitar Consulta Gratuita →
-        </button>
-      </form>
+      <div data-fs-success style="display:none;padding:18px 20px;background:rgba(37,211,102,0.08);border:1px solid rgba(37,211,102,0.4);border-radius:2px;margin-bottom:20px;"><p style="color:#25D366;font-size:14px;font-weight:600;margin:0 0 4px;">Mensagem enviada com sucesso!</p><p style="color:rgba(246,243,238,0.55);font-size:12px;margin:0;font-family:Crimson Pro,serif;">Aldo entrará em contato em breve. O WhatsApp também foi aberto para agilizar.</p></div>
+<div data-fs-error style="display:none;padding:16px 20px;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.35);border-radius:2px;margin-bottom:20px;"><p style="color:#f87171;font-size:13px;margin:0;">Erro ao enviar. Tente novamente ou use o WhatsApp diretamente.</p></div>
+<form id="als-contact-form">
+  <div class="fgrid">
+    <div class="fgroup">
+      <label class="flabel">Nome Completo *</label>
+      <input type="text" name="nome" class="finput" placeholder="Seu nome" required data-fs-field>
+      <span data-fs-error="nome" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
+    </div>
+    <div class="fgroup">
+      <label class="flabel">WhatsApp *</label>
+      <input type="tel" name="whatsapp" class="finput" placeholder="(11) 99999-9999" required data-fs-field>
+      <span data-fs-error="whatsapp" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
+    </div>
+  </div>
+  <div class="fgroup">
+    <label class="flabel">E-mail</label>
+    <input type="email" name="email" class="finput" placeholder="seu@email.com" data-fs-field>
+    <span data-fs-error="email" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
+  </div>
+  <div class="fgroup">
+    <label class="flabel">Tipo de Empresa</label>
+    <select name="tipo_empresa" class="fselect finput">
+      <option value="">Selecione...</option>
+      <option>MEI</option>
+      <option>Microempresa (ME)</option>
+      <option>Empresa de Pequeno Porte (EPP)</option>
+      <option>Empresa de Médio/Grande Porte</option>
+      <option>Pessoa Física</option>
+      <option>Ainda não tenho empresa</option>
+    </select>
+  </div>
+  <div class="fgroup">
+    <label class="flabel">Qual serviço você precisa?</label>
+    <textarea name="mensagem" class="ftextarea" placeholder="Descreva brevemente sua necessidade..." data-fs-field></textarea>
+    <span data-fs-error="mensagem" style="font-size:11px;color:#f87171;margin-top:4px;display:block;"></span>
+  </div>
+  <input type="hidden" name="_subject" value="[ALS Site] Nova consulta de contato">
+  <input type="hidden" name="_template" value="table">
+  <input type="hidden" name="_language" value="pt">
+  <button type="submit" class="fsubmit" data-fs-submit-btn>
+    Solicitar Consulta Gratuita →
+  </button>
+</form>
     </div>
   </div>
 </section>
@@ -2090,72 +2100,48 @@ setTimeout(() => {
   document.querySelectorAll('.hero-stat-num[data-target]').forEach(animateCounter);
 }, 1200);
 
-// ── FORM SUBMIT ──
-function submitForm(e) {
-  e.preventDefault();
-  const form = e.target;
-  const btn  = form.querySelector('.fsubmit');
+// ── FORMSPREE INIT + WHATSAPP ON SUCCESS ──
+document.addEventListener('DOMContentLoaded', function () {
+  // Inicializa Formspree Ajax SDK
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', {
+    formElement: '#als-contact-form',
+    formId: 'mrevpvvg'
+  });
 
-  // ── Captura campos ──
-  const inputs  = form.querySelectorAll('.finput, .fselect, .ftextarea');
-  const nome    = inputs[0]?.value?.trim() || '';
-  const fone    = inputs[1]?.value?.trim() || '';
-  const email   = inputs[2]?.value?.trim() || '';
-  const empresa = inputs[3]?.value?.trim() || '';
-  const servico = inputs[4]?.value?.trim() || '';
+  // Quando Formspree confirmar sucesso, abre WhatsApp com os dados
+  var successEl = document.querySelector('[data-fs-success]');
+  if (successEl) {
+    var alreadyOpened = false;
+    var obs = new MutationObserver(function () {
+      var visible = successEl.style.display !== 'none' && successEl.style.display !== '';
+      if (!visible || alreadyOpened) return;
+      alreadyOpened = true;
 
-  if (!nome || !fone) {
-    inputs[0].focus();
-    return;
+      var f = document.getElementById('als-contact-form');
+      var nome    = (f.querySelector('[name=nome]')         || {}).value || '';
+      var fone    = (f.querySelector('[name=whatsapp]')     || {}).value || '';
+      var email   = (f.querySelector('[name=email]')        || {}).value || '';
+      var empresa = (f.querySelector('[name=tipo_empresa]') || {}).value || '';
+      var servico = (f.querySelector('[name=mensagem]')     || {}).value || '';
+
+      var msg = '*Solicitação de Consulta — ALS Assessoria*\n\n';
+      if (nome)    msg += '*Nome:* '            + nome.trim()    + '\n';
+      if (fone)    msg += '*WhatsApp:* '        + fone.trim()    + '\n';
+      if (email)   msg += '*E-mail:* '          + email.trim()   + '\n';
+      if (empresa) msg += '*Tipo de empresa:* ' + empresa.trim() + '\n';
+      if (servico) msg += '\n*Necessidade:*\n' + servico.trim() + '\n';
+      msg += '\n_Enviado pelo site ALS Assessoria_';
+
+      var waUrl = 'https://wa.me/5511950191452?text=' + encodeURIComponent(msg);
+      setTimeout(function () {
+        window.open(waUrl, '_blank');
+        alreadyOpened = false; // reset para próximo envio
+      }, 1000);
+    });
+    obs.observe(successEl, { attributes: true, attributeFilter: ['style'] });
   }
-
-  btn.textContent = '\u2713 Enviando...';
-  btn.disabled    = true;
-  btn.style.opacity = '0.8';
-
-  // ── 1. Monta e-mail via mailto (entrega direta ao Outlook do Aldo) ──
-  const assunto = encodeURIComponent('[ALS Site] Nova consulta — ' + nome);
-  let corpo  = 'SOLICITAÇÃO DE CONSULTA — ALS ASSESSORIA\n';
-      corpo += '==========================================\n\n';
-  if (nome)    corpo += 'Nome:           ' + nome    + '\n';
-  if (fone)    corpo += 'WhatsApp:       ' + fone    + '\n';
-  if (email)   corpo += 'E-mail:         ' + email   + '\n';
-  if (empresa) corpo += 'Tipo de empresa: ' + empresa + '\n';
-  if (servico) corpo += '\nNecessidade:\n' + servico  + '\n';
-              corpo += '\n--\nMensagem enviada pelo site ALS Assessoria';
-  const mailtoUrl = 'mailto:alslesbao@outlook.com?subject=' + assunto + '&body=' + encodeURIComponent(corpo);
-
-  // ── 2. Monta mensagem WhatsApp ──
-  let msg = '\uD83C\uDFE2 *Solicitação de Consulta — ALS Assessoria*\n\n';
-  if (nome)    msg += '\uD83D\uDC64 *Nome:* ' + nome    + '\n';
-  if (fone)    msg += '\uD83D\uDCF1 *WhatsApp:* ' + fone    + '\n';
-  if (email)   msg += '\u2709 *E-mail:* ' + email   + '\n';
-  if (empresa) msg += '\uD83C\uDFEA *Empresa:* ' + empresa + '\n';
-  if (servico) msg += '\n\uD83D\uDCCB *Necessidade:*\n' + servico + '\n';
-  msg += '\n_Enviado pelo site ALS Assessoria_';
-  const waUrl = 'https://wa.me/5511950191452?text=' + encodeURIComponent(msg);
-
-  // ── 3. Abre e-mail primeiro, depois WhatsApp ──
-  setTimeout(() => {
-    window.location.href = mailtoUrl;          // abre cliente de e-mail
-    setTimeout(() => {
-      window.open(waUrl, '_blank');             // abre WhatsApp
-      btn.textContent  = '\u2713 Enviado com sucesso!';
-      btn.style.background = '#25D366';
-      btn.style.color  = '#fff';
-      btn.style.opacity = '1';
-
-      setTimeout(() => {
-        btn.textContent  = 'Solicitar Consulta Gratuita \u2192';
-        btn.style.background = '';
-        btn.style.color  = '';
-        btn.disabled     = false;
-        btn.style.opacity = '';
-        form.reset();
-      }, 5000);
-    }, 1200);
-  }, 300);
-}
+});
 
 // ── SMOOTH SCROLL ──
 document.querySelectorAll('a[href^="#"]').forEach(a => {
