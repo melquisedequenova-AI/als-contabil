@@ -84,14 +84,14 @@ nav {
   align-items: center;
   justify-content: space-between;
   transition: background 0.5s ease, border-color 0.5s ease;
-  border-bottom: 1px solid rgba(28,37,52,0.12);
-  background: rgba(240,238,234,0.97);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: rgba(28,52,90,0.97);
   backdrop-filter: blur(16px) saturate(180%);
 }
 nav.scrolled {
-  background: rgba(235,232,226,0.98);
+  background: rgba(28,52,90,0.98);
   backdrop-filter: blur(20px) saturate(180%);
-  border-bottom-color: rgba(28,37,52,0.15);
+  border-bottom-color: rgba(255,255,255,0.1);
 }
 
 .nav-brand {
@@ -105,7 +105,7 @@ nav.scrolled {
   font-family: 'Playfair Display', serif;
   font-size: 15px;
   font-weight: 500;
-  color: var(--midnight);
+  color: var(--paper);
   letter-spacing: 0.5px;
   line-height: 1.2;
 }
@@ -124,7 +124,7 @@ nav.scrolled {
   display: flex; gap: 40px; list-style: none;
 }
 .nav-center a {
-  color: rgba(14,21,32,0.55);
+  color: rgba(255,255,255,0.65);
   text-decoration: none;
   font-size: 11px;
   letter-spacing: 2.5px;
@@ -140,7 +140,7 @@ nav.scrolled {
   transform: scaleX(0); transform-origin: left;
   transition: transform 0.35s ease;
 }
-.nav-center a:hover { color: var(--midnight); }
+.nav-center a:hover { color: var(--paper); }
 .nav-center a:hover::after { transform: scaleX(1); }
 
 .nav-cta {
