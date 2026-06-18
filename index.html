@@ -382,28 +382,32 @@ nav.scrolled {
 }
 .hero-stat {
   flex: 1;
-  padding: 22px 32px;
+  padding: 10px 24px;
   border-right: 1px solid var(--accent-line);
   background: rgba(10,10,10,0.85);
   backdrop-filter: blur(10px);
   transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .hero-stat:last-child { border-right: none; }
 .hero-stat:hover { background: rgba(184,149,58,0.08); }
 .hero-stat-num {
   font-family: 'Playfair Display', serif;
-  font-size: 2.2rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--gold);
   display: block;
   line-height: 1;
+  flex-shrink: 0;
 }
 .hero-stat-label {
   font-size: 9px;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   color: rgba(246,243,238,0.4);
-  margin-top: 4px;
+  margin-top: 0;
   display: block;
 }
 
